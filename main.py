@@ -2,6 +2,7 @@ import sys
 import click
 
 # bin/hadoop jar share/hadoop/tools/lib/hadoop-*streaming*.jar -file ~/mapper.py -mapper ~/mapper.py -file ~/reducer.py -reducer ~/reducer.py -input ~/tmp -output ~/output
+# cat columbus.txt | ./mapper_lf.py | sort -n | ./reduce_lf.py
 
 @click.command()
 @click.option('--mapper', '--m', prompt='Path to mapper program', help='Path to mapper program')
