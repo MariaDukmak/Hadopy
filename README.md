@@ -1,6 +1,7 @@
 # Hadopy - Easy parallel map-reduce command line tool
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python Versions](https://img.shields.io/pypi/pyversions/yt2mp3.svg)](https://pypi.python.org/pypi/yt2mp3/)
+[![PyPI version](https://badge.fury.io/py/hadopy.svg)](https://badge.fury.io/py/hadopy)
 
 If you want to map reduce parallel but hadoop is overkill,
 with Hadopy you can run map reduce in python. 
