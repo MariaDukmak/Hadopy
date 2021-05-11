@@ -42,7 +42,6 @@ def reducer_worker(texts: List[str], reducer: Command) -> str:
                           ).stdout
 
 
-
 @click.command()
 @click.option('--mapper', '--m', help='Mapper command, for example "python mapper.py"')
 @click.option('--reducer', '--r', help='Reducer command, for example "python reducer.py"')
