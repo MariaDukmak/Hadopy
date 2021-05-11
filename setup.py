@@ -5,9 +5,9 @@ install_requires = [
 ]
 
 setup(
-    name='Hadopy',
+    name='hadopy',
     description="Easy parallel map-reduce command line tool",
-    version='0.1.1',
+    version='0.1.2',
     packages=find_packages(),
     install_requires=install_requires,
     python_requires='>=3.6',

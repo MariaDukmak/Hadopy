@@ -2,3 +2,4 @@
 example
 *__pycache__
 *.egg-info
+dist
