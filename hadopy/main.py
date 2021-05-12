@@ -7,7 +7,7 @@ from multiprocessing import Pool, cpu_count
 from typing import List
 
 Command = List[str]
-ENCODING = 'ascii'
+ENCODING = 'utf-8'
 
 
 def mapper_worker(text: str, mapper: Command) -> str:
