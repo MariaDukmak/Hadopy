@@ -25,15 +25,20 @@ def mapper_worker(text: str, mapper: Command) -> str:
                           ).stdout
 
 
-def reducer_worker(texts: List[str], reducer: Command) -> str:
+def reducer_worker(texts: List[str], reducer: Command, sort: bool) -> str:
     """
     Concatenate the given texts and sort the lines and apply the reducer command on it.
 
+    :param sort: Sort mapper output
     :param texts: String of text
     :param reducer: Terminal command to pipe the text through
     :return: Reduced string of text
     """
-    concatenated = '\n'.join(sorted(filter(lambda x: '\t' in x, '\n'.join(texts).split('\n'))))
+
+    if sort:
+        concatenated = '\n'.join(sorted(filter(lambda x: len(x) > 1, '\n'.join(texts).split('\n'))))
+    else:
+        concatenated = '\n'.join(filter(lambda x: len(x) > 1, '\n'.join(texts).split('\n')))
 
     return subprocess.run(reducer,
                           stdout=subprocess.PIPE,
@@ -46,7 +51,8 @@ def reducer_worker(texts: List[str], reducer: Command) -> str:
 @click.option('--mapper', '--m', help='Mapper command, for example "python mapper.py"')
 @click.option('--reducer', '--r', help='Reducer command, for example "python reducer.py"')
 @click.option('--n_threads', help="Number of threads to use", default=cpu_count())
-def cli(mapper, reducer, n_threads):
+@click.option('--sort', '--s', help="Sort the output", default=True)
+def cli(mapper, reducer, n_threads, sort):
     """
     If you want to map reduce parallel but hadoop is overkill,
     with Hadopy you can run map reduce in python.
@@ -69,7 +75,7 @@ def cli(mapper, reducer, n_threads):
                 map(lambda i: ('\n'.join(line_split[i::n_threads]), mapper), range(n_threads))
             )
 
-        sys.stdout.write(reducer_worker(mapped, reducer))
+        sys.stdout.write(reducer_worker(mapped, reducer, sort))
 
 
 if __name__ == "__main__":
