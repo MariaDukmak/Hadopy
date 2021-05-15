@@ -10,39 +10,17 @@ Command = List[str]
 ENCODING = 'utf-8'
 
 
-def mapper_worker(text: str, mapper: Command) -> str:
+def command_worker(text: str, command: Command) -> str:
     """
-    Use the given mapper command on the given text.
+        Use the given command on the given text and return the output pipe.
 
-    :param text: String of text
-    :param mapper: Terminal command to pipe the text through
-    :return: Mapped string of text
+        :param text: String of text
+        :param command: Terminal command to pipe the text through
+        :return: output piped from the command
     """
-    return subprocess.run(mapper,
+    return subprocess.run(command,
                           stdout=subprocess.PIPE,
                           input=text,
-                          encoding=ENCODING
-                          ).stdout
-
-
-def reducer_worker(texts: List[str], reducer: Command, sort: bool) -> str:
-    """
-    Concatenate the given texts and sort the lines and apply the reducer command on it.
-
-    :param sort: Sort mapper output
-    :param texts: String of text
-    :param reducer: Terminal command to pipe the text through
-    :return: Reduced string of text
-    """
-
-    if sort:
-        concatenated = '\n'.join(sorted(filter(lambda x: len(x) > 1, '\n'.join(texts).split('\n'))))
-    else:
-        concatenated = '\n'.join(filter(lambda x: len(x) > 1, '\n'.join(texts).split('\n')))
-
-    return subprocess.run(reducer,
-                          stdout=subprocess.PIPE,
-                          input=concatenated,
                           encoding=ENCODING
                           ).stdout
 
@@ -57,25 +35,30 @@ def cli(mapper, reducer, n_threads, sort):
     If you want to map reduce parallel but hadoop is overkill,
     with Hadopy you can run map reduce in python.
     """
-    if mapper is None:
-        click.secho('Please specify a mapper command for example `--mapper "python mapper.py"`', fg='red')
-        sys.exit()
-    elif reducer is None:
-        click.secho('Please specify a reducer command for example `--reducer "python reducer.py"`', fg='red')
-        sys.exit()
+    if mapper or reducer:
+        working_text = sys.stdin.read()
+
+        if mapper:
+            mapper: Command = mapper.split(' ')
+            split_text = working_text.split('\n')
+
+            with Pool(n_threads) as pool:
+                working_text = ''.join(pool.starmap(
+                    command_worker,
+                    map(lambda i: ('\n'.join(split_text[i::n_threads]), mapper), range(n_threads))
+                ))
+
+        if reducer:
+            reducer: Command = reducer.split(' ')
+            if sort:
+                working_text = '\n'.join(sorted(working_text.split('\n')))
+
+            working_text = command_worker(working_text, reducer)
+
+        sys.stdout.write(working_text)
     else:
-        mapper: Command = mapper.split(' ')
-        reducer: Command = reducer.split(' ')
-
-        line_split = sys.stdin.read().split('\n')
-
-        with Pool(n_threads) as pool:
-            mapped = pool.starmap(
-                mapper_worker,
-                map(lambda i: ('\n'.join(line_split[i::n_threads]), mapper), range(n_threads))
-            )
-
-        sys.stdout.write(reducer_worker(mapped, reducer, sort))
+        click.secho("Use either --mapper or --reducer, otherwise hadopy will be of no use, "
+                    "\nuse --help for more info.", fg='red')
 
 
 if __name__ == "__main__":
